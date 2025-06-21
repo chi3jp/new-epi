@@ -37,14 +37,17 @@
     input[type="text"], 
     textarea {
       width: 100%;
+      max-width: 100%;
       box-sizing: border-box;
       padding: 10px;
       margin: 5px 0 20px 0;
       border: 1px solid #ddd;
       border-radius: 4px;
       font-size: 16px;
-      max-width: 100%;
       font-family: inherit;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
     }
     input[type="text"] {
       height: 40px;
@@ -131,7 +134,7 @@
     <div class="form-group">
       <label for="applePodcastId">Apple Podcastの番組ID</label>
       <div style="display: flex; gap: 8px;">
-        <input type="text" id="applePodcastId" placeholder="例: 1821673136" style="flex: 1;">
+        <input type="text" id="applePodcastId" placeholder="例: 1821673136" style="flex: 1; overflow: hidden; text-overflow: ellipsis;">
         <button type="button" onclick="clearField('applePodcastId')" class="clear-btn">×</button>
       </div>
       <div class="example">Apple PodcastのURLの「id」の後の数字（例: https://podcasts.apple.com/jp/podcast/id1821673136 の場合「1821673136」）</div>
