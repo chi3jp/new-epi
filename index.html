@@ -173,17 +173,44 @@
   </div>
 
   <script>
-    // ページ読み込み時にURLパラメータをチェック
+    // 保存用のフィールドIDの配列
+    const formFields = ['rssUrl', 'applePodcastId', 'spotifyShowId', 'summary', 'hashtags'];
+
+    // フォームの値を保存
+    function saveFormData() {
+      formFields.forEach(fieldId => {
+        const element = document.getElementById(fieldId);
+        if (element) {
+          localStorage.setItem(fieldId, element.value);
+        }
+      });
+    }
+
+    // ページ読み込み時に保存されたデータを復元
     document.addEventListener('DOMContentLoaded', function() {
+      // ローカルストレージから値を復元
+      formFields.forEach(fieldId => {
+        const savedValue = localStorage.getItem(fieldId);
+        const element = document.getElementById(fieldId);
+        if (savedValue !== null && element) {
+          element.value = savedValue;
+        }
+        // 入力イベントリスナーを追加
+        element.addEventListener('input', saveFormData);
+      });
+
+      // URLパラメータをチェック（既存の機能を維持）
       const urlParams = new URLSearchParams(window.location.search);
       const rssUrl = urlParams.get('rss');
       const appleId = urlParams.get('appleId');
       
       if (rssUrl) {
         document.getElementById('rssUrl').value = rssUrl;
+        saveFormData(); // URLパラメータで上書きした場合も保存
       }
       if (appleId) {
         document.getElementById('applePodcastId').value = appleId;
+        saveFormData(); // URLパラメータで上書きした場合も保存
       }
       
       // パラメータがあれば自動で生成
@@ -274,6 +301,7 @@
 
     function clearField(fieldId) {
       document.getElementById(fieldId).value = '';
+      localStorage.removeItem(fieldId); // ローカルストレージからも削除
     }
 
     function copyText() {
