@@ -131,22 +131,22 @@
       <div class="example">stand.fmの番組ページで「RSS」を右クリックしてURLをコピー</div>
     </div>
 
-    <div class="form-group">
+    <div class="form-group" style="overflow: hidden;">
       <label for="applePodcastId">Apple Podcastの番組ID</label>
-      <div style="display: flex; gap: 8px;">
-        <input type="text" id="applePodcastId" placeholder="例: 1821673136" style="flex: 1; overflow: hidden; text-overflow: ellipsis;">
-        <button type="button" onclick="clearField('applePodcastId')" class="clear-btn">×</button>
+      <div style="display: flex; gap: 8px; width: 100%;">
+        <input type="text" id="applePodcastId" placeholder="例: 1821673136" style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+        <button type="button" onclick="clearField('applePodcastId')" class="clear-btn" style="flex-shrink: 0;">×</button>
       </div>
       <div class="example">Apple PodcastのURLの「id」の後の数字（例: https://podcasts.apple.com/jp/podcast/id1821673136 の場合「1821673136」）</div>
     </div>
 
-    <div class="form-group">
-      <label for="spotifyShowId">Spotifyの番組ID</label>
-      <div style="display: flex; gap: 8px;">
-        <input type="text" id="spotifyShowId" placeholder="例: 6mDQ3s4QzXHsmDsro0sQ8e" style="flex: 1;">
-        <button type="button" onclick="clearField('spotifyShowId')" class="clear-btn">×</button>
+    <div class="form-group" style="overflow: hidden;">
+      <label for="spotifyShowId">Spotify Show ID（任意）</label>
+      <div style="display: flex; gap: 8px; width: 100%;">
+        <input type="text" id="spotifyShowId" placeholder="例: 1OoXqUf0L5sJQ5n2OvF8KX" style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+        <button type="button" onclick="clearField('spotifyShowId')" class="clear-btn" style="flex-shrink: 0;">×</button>
       </div>
-      <div class="example">Spotifyの番組URLの「show/」の後の文字列（例: https://open.spotify.com/show/6mDQ3s4QzXHsmDsro0sQ8e の場合「6mDQ3s4QzXHsmDsro0sQ8e」）</div>
+      <div class="example">Spotifyの番組URLの「show/」の後の英数字（例: https://open.spotify.com/show/1OoXqUf0L5sJQ5n2OvF8KX の場合「1OoXqUf0L5sJQ5n2OvF8KX」）</div>
     </div>
 
     <div class="form-group">
