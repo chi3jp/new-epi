@@ -221,29 +221,17 @@
       // よく使われるハッシュタグ
       const commonHashtags = ['#standfm', '#ポッドキャスト', '#podcast'];
       
-      // タイトルからハッシュタグを生成
-      // 1. 記号をスペースに置換
-      // 2. 単語に分割（スペース、句読点、中黒で区切る）
-      // 3. 1文字の単語を除外
-      // 4. 数字のみの単語を除外
-      // 5. ストップワードを除外
-      // 6. 重複を削除
-      // 7. 先頭の単語を取得（最大3つ）
-      // 8. ハッシュタグに変換
-      const hashtags = [...new Set(
-        title
-          .replace(/[【】『』「」()\[\]|・、,]/g, ' ')
-          .split(/\s+/)
-          .filter(word => word.length > 1)
-          .filter(word => !/^\d+$/.test(word))
-          .filter(word => !/^(の|に|は|を|が|と|で|も|へ|や|か|な|だ|です|ます|する|こと|ため|よう|たち|さん|ちゃん|くん|様|さま)$/.test(word))
-      )]
-        .slice(0, 3)
-        .map(word => `#${word}`)
-        .join(' ');
+      // タイトルから不要な文字を削除してハッシュタグを生成
+      const cleanTitle = title
+        .replace(/^\s*\d+\.?\s*/, '')  // 先頭の番号を削除
+        .replace(/[【】『』「」()\[\]|・、,]/g, '')  // 記号を削除
+        .trim();
+      
+      // タイトル全体を1つのハッシュタグとして扱う
+      const titleHashtag = `#${cleanTitle}`;
       
       // 共通のハッシュタグと結合
-      return `${hashtags} ${commonHashtags.join(' ')}`.trim();
+      return `${titleHashtag} ${commonHashtags.join(' ')}`.trim();
     }
 
     async function generatePost() {
