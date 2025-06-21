@@ -125,21 +125,34 @@
       });
     });
 
-    // タイトルをハッシュタグに変換
+    // タイトルから名詞っぽい単語を抽出してハッシュタグを生成
     function generateHashtags(title) {
-      // タイトルから不要な文字を削除してハッシュタグに変換
-      const cleanTitle = title
-        .replace(/[\s\n\r]+/g, '')
-        .replace(/[^\u4e00-\u9faf\u3040-\u309f\u30a0-\u30ffa-zA-Z0-9]/g, '');
+      // 名詞とみなす単語パターン（2文字以上の漢字、カタカナ、英単語）
+      const nounPatterns = [
+        /[\u4e00-\u9faf]{2,}/g,  // 漢字2文字以上
+        /[\u30a0-\u30ff]{2,}/g,  // カタカナ2文字以上
+        /\b[a-zA-Z]{3,}\b/g      // 英単語3文字以上
+      ];
+
+
+      // タイトルから名詞っぽい単語を抽出
+      const nouns = [];
+      nounPatterns.forEach(pattern => {
+        const matches = title.match(pattern) || [];
+        nouns.push(...matches);
+      });
+
+      // 重複を削除して最初の3つを取得
+      const uniqueNouns = [...new Set(nouns)].slice(0, 3);
       
-      // タイトルのハッシュタグ（最大20文字）
-      const titleTag = cleanTitle ? `#${cleanTitle.substring(0, 20)}` : '';
+      // ハッシュタグに変換
+      const nounTags = uniqueNouns.map(noun => `#${noun}`);
       
       // 共通のハッシュタグ
       const commonTags = ['#standfm', '#ポッドキャスト', '#podcast', '#Spotify'];
       
-      // 結合（タイトルタグが空でない場合のみ追加）
-      const allTags = [...(titleTag ? [titleTag] : []), ...commonTags];
+      // 結合
+      const allTags = [...nounTags, ...commonTags];
       
       return allTags.join(' ');
     }
