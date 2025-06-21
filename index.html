@@ -224,11 +224,15 @@
       // よく使われるハッシュタグ
       const commonHashtags = ['#standfm', '#ポッドキャスト', '#podcast'];
       
+      // タイトルからナンバーを削除（先頭の数字とピリオド、スペースを削除）
+      const cleanTitle = title.replace(/^\s*\d+\.?\s*/, '');
+      
       // タイトルからキーワードを抽出してハッシュタグを生成
-      const keywords = title
+      const keywords = cleanTitle
         .replace(/[【】『』「」()\[\]|]/g, ' ') // 記号をスペースに
         .split(/[\s・、,]+/) // 区切り文字で分割
         .filter(word => word.length > 1) // 1文字の単語は除外
+        .filter(word => !/^\d+$/.test(word)) // 数字のみの単語を除外
         .filter(word => !/^(の|に|は|を|が|と|で|も|へ|や|か|な|だ|です|ます|です|する|こと|ため|よう|たち|さん|ちゃん|くん|様|さま)$/.test(word)) // ストップワードを除外
         .slice(0, 3); // 最大3つのキーワードを取得
       
@@ -238,8 +242,8 @@
         ...commonHashtags
       ])].join(' ');
       
-      // サマリーを生成（タイトルをそのまま使用）
-      const summary = `${title}`;
+      // サマリーを生成（ナンバーを削除したタイトルを使用）
+      const summary = cleanTitle;
       
       return { summary, hashtags: generatedHashtags };
     }
