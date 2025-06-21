@@ -125,35 +125,31 @@
       });
     });
 
-    // タイトルからハッシュタグを自動生成
+    // タイトルから重要なキーワードを抽出してハッシュタグを生成
     function generateHashtags(title) {
-      const commonHashtags = ['#standfm', '#ポッドキャスト', '#podcast'];
-      const cleanTitle = title.replace(/^\s*[#＃]?\d+[\.\s]*/, '').trim();
-      const words = [];
-      let currentWord = '';
-      for (const char of cleanTitle) {
-        const isTargetChar =
-          /[\u4e00-\u9faf]/.test(char) ||
-          /[\u3040-\u309f]/.test(char) ||
-          /[\u30a0-\u30ff]/.test(char) ||
-          /[a-zA-Z0-9]/.test(char);
-        if (isTargetChar) {
-          currentWord += char;
-        } else if (currentWord) {
-          words.push(currentWord);
-          currentWord = '';
-        }
-      }
-      if (currentWord) {
-        words.push(currentWord);
-      }
-      const filteredWords = words.filter(word => word.length > 1);
-      const hashtagSet = new Set();
-      filteredWords.forEach(word => {
-        hashtagSet.add(`#${word}`);
-      });
-      commonHashtags.forEach(tag => hashtagSet.add(tag));
-      return Array.from(hashtagSet).join(' ');
+      // 除外する単語（助詞、助動詞、接続詞など）
+      const stopWords = new Set([
+        'こと', 'もの', 'とき', 'ため', 'よう', 'そう', 'これ', 'それ', 'あれ', 'この',
+        'その', 'あの', 'ここ', 'そこ', 'あそこ', 'どこ', 'だれ', 'なに', 'なん', 'さん',
+        'です', 'ます', 'です', 'ました', 'ました', 'そして', 'しかし', 'だから', 'でも',
+        'が', 'は', 'の', 'に', 'を', 'で', 'と', 'や', 'か', 'も', 'は', 'の', 'に',
+        'を', 'で', 'と', 'や', 'か', 'も', 'が', 'は', 'の', 'に', 'を', 'で', 'と', 'や', 'か', 'も'
+      ]);
+
+      // タイトルから名詞っぽい単語を抽出（2文字以上の単語）
+      const words = (title.match(/[\u4e00-\u9faf\u30a0-\u30ffa-zA-Z]{2,}/g) || [])
+        .filter(word => !stopWords.has(word));
+      
+      // キーワードを抽出（最初の3つの重要な単語を取得）
+      const importantKeywords = words.slice(0, 3).map(word => `#${word}`);
+      
+      // 共通のハッシュタグを追加
+      const commonTags = ['#standfm', '#ポッドキャスト', '#podcast', '#Spotify'];
+      
+      // 重複を避けて結合
+      const allTags = [...new Set([...importantKeywords, ...commonTags])];
+      
+      return allTags.join(' ');
     }
 
     async function generatePost() {
