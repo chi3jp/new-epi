@@ -144,14 +144,6 @@
     </div>
 
     <div class="form-group">
-      <label for="summary">サマリーテキスト</label>
-      <div style="display: flex; gap: 8px;">
-        <input type="text" id="summary" placeholder="例: バイブコーディング中のトラブル体験と学びを共有。" style="flex: 1;">
-        <button type="button" onclick="clearField('summary')" class="clear-btn">×</button>
-      </div>
-    </div>
-
-    <div class="form-group">
       <label for="hashtags">ハッシュタグ</label>
       <div style="display: flex; gap: 8px;">
         <input type="text" id="hashtags" placeholder="例: #バイブコーディング #AI活用 #生成AI #ちょっとai #ポッドキャスト" style="flex: 1;">
@@ -174,7 +166,12 @@
 
   <script>
     // 保存用のフィールドIDの配列
-    const formFields = ['rssUrl', 'applePodcastId', 'spotifyShowId', 'summary', 'hashtags'];
+    const formFields = ['rssUrl', 'applePodcastId', 'spotifyShowId', 'hashtags'];
+    
+    // 古いサマリーデータを削除
+    if (localStorage.getItem('summary')) {
+      localStorage.removeItem('summary');
+    }
 
     // フォームの値を保存
     function saveFormData() {
@@ -311,23 +308,16 @@
           post += `\nSpotify↓\n${spotifyUrl}`;
         }
         
-        // 現在のサマリーとハッシュタグを取得（自動生成されたものも含む）
-        const currentSummary = document.getElementById('summary').value.trim();
+        // ハッシュタグを取得して投稿文に追加
         const currentHashtags = document.getElementById('hashtags').value.trim();
-        
-        // 投稿文に追加
-        if (currentSummary) {
-          post += `\n\n${currentSummary}`;
-        }
         if (currentHashtags) {
-          post += currentSummary ? `\n${currentHashtags}` : `\n\n${currentHashtags}`;
+          post += `\n\n${currentHashtags}`;
         }
         
         postText.value = post;
         
         // ハッシュタグが空の場合、自動生成
         const hashtagsField = document.getElementById('hashtags');
-        
         if (!hashtagsField.value.trim() && title) {
           const hashtags = generateHashtags(title);
           hashtagsField.value = hashtags;
