@@ -227,68 +227,22 @@
       // タイトルからナンバーを削除（先頭の数字とピリオド、スペースを削除）
       const cleanTitle = title.replace(/^\s*\d+\.?\s*/, '');
       
-      // キーワードとトピックのマッピング
-      const topicMap = {
-        // 技術関連
-        'ai': 'AI技術の最新動向',
-        '機械学習': '機械学習の実践的活用方法',
-        'プログラミング': 'プログラミングのコツとテクニック',
-        '開発': '効率的な開発手法',
-        'テクノロジー': '最新テクノロジーのトレンド',
-        // ビジネス関連
-        'ビジネス': 'ビジネス戦略と成功の秘訣',
-        '起業': '起業のヒントとノウハウ',
-        'マーケティング': '効果的なマーケティング戦略',
-        // ライフスタイル
-        '健康': '健康的な生活を送るためのヒント',
-        '食事': 'バランスの取れた食事法',
-        '運動': '効果的なエクササイズ方法',
-        // エンタメ
-        '映画': 'おすすめ映画の感想',
-        '音楽': '音楽の楽しみ方',
-        '本': 'おすすめの本の紹介',
-        // 教育
-        '学習': '効果的な学習法',
-        '教育': '教育の最新トレンド',
-        'スキルアップ': 'スキルアップのコツ'
-      };
-
-      // タイトルからキーワードを抽出
-      const keywords = cleanTitle
+      // サマリーはタイトルをそのまま使用
+      const summary = cleanTitle;
+      
+      // タイトルからハッシュタグを生成
+      const hashtags = cleanTitle
         .replace(/[【】『』「」()\[\]|]/g, ' ') // 記号をスペースに
         .split(/[\s・、,]+/) // 区切り文字で分割
         .filter(word => word.length > 1) // 1文字の単語は除外
         .filter(word => !/^\d+$/.test(word)) // 数字のみの単語を除外
         .filter(word => !/^(の|に|は|を|が|と|で|も|へ|や|か|な|だ|です|ます|です|する|こと|ため|よう|たち|さん|ちゃん|くん|様|さま)$/.test(word)) // ストップワードを除外
-        .slice(0, 3); // 最大3つのキーワードを取得
+        .slice(0, 3) // 最大3つのキーワードを取得
+        .map(word => `#${word}`) // ハッシュタグに変換
+        .join(' ');
       
-      // サマリーを生成（キーワードに基づいて動的に生成）
-      let summary = '';
-      for (const word of keywords) {
-        if (topicMap[word]) {
-          summary = topicMap[word] + 'についてお届けします！';
-          break;
-        }
-      }
-      
-      // マッチするトピックがない場合のデフォルトメッセージ
-      if (!summary) {
-        summary = '新着エピソードを公開しました！';
-      }
-      
-      // 関連するハッシュタグを追加
-      const relatedHashtags = [];
-      for (const word of keywords) {
-        if (topicMap[word]) {
-          relatedHashtags.push(`#${word}`);
-        }
-      }
-      
-      // ユニークなハッシュタグを生成
-      const generatedHashtags = [...new Set([
-        ...relatedHashtags,
-        ...commonHashtags
-      ])].join(' ');
+      // 共通のハッシュタグと結合
+      const generatedHashtags = `${hashtags} ${commonHashtags.join(' ')}`;
       
       return { summary, hashtags: generatedHashtags };
     }
