@@ -221,22 +221,30 @@
       // よく使われるハッシュタグ
       const commonHashtags = ['#standfm', '#ポッドキャスト', '#podcast'];
       
-      // 1. 先頭の番号を削除
-      const cleanTitle = title.replace(/^\s*\d+\.?\s*/, '');
+      // 1. 先頭の番号を完全に削除（「#61」や「61.」など）
+      const cleanTitle = title.replace(/^\s*[#＃]?\d+[\.\s]*/, '').trim();
       
       // 2. 記号を削除して単語に分割
       const words = cleanTitle
         .replace(/[【】『』「」()\[\]|・、,]/g, ' ')  // 記号をスペースに
         .split(/\s+/)  // 1つ以上の連続する空白で分割
-        .filter(word => word.length > 0);  // 空の要素を削除
+        .filter(word => word.length > 0 && !/^[#＃]/.test(word));  // 空と既に#が付いているものを除外
       
-      // 3. 各単語に#を付与して結合
-      const titleHashtags = words
-        .map(word => `#${word}`)  // 各単語に#を付与
-        .join(' ');  // スペースで結合
+      // 3. ユニークなハッシュタグのセットを作成
+      const hashtagSet = new Set();
       
-      // 4. 共通のハッシュタグと結合
-      return `${titleHashtags} ${commonHashtags.join(' ')}`.trim();
+      // 4. タイトルから生成したハッシュタグを追加
+      words.forEach(word => {
+        if (!/^[#＃]/.test(word)) {  // まだ#が付いていない場合のみ追加
+          hashtagSet.add(`#${word}`);
+        }
+      });
+      
+      // 5. 共通のハッシュタグを追加（重複しないように）
+      commonHashtags.forEach(tag => hashtagSet.add(tag));
+      
+      // 6. 配列に変換してスペースで結合
+      return Array.from(hashtagSet).join(' ');
     }
 
     async function generatePost() {
