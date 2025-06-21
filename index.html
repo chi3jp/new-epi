@@ -69,6 +69,23 @@
     .btn:hover { 
       background: #0d8ddb; 
     }
+    
+    .clear-btn {
+      background: #f1f1f1;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      color: #666;
+      cursor: pointer;
+      font-size: 16px;
+      height: 40px;
+      line-height: 1;
+      padding: 0 12px;
+      transition: background 0.3s;
+    }
+    
+    .clear-btn:hover {
+      background: #e0e0e0;
+    }
     .btn:active { 
       transform: translateY(1px);
     }
@@ -101,24 +118,45 @@
     
     <div class="form-group">
       <label for="rssUrl">stand.fmのRSS URL</label>
-      <input type="text" id="rssUrl" placeholder="例: https://stand.fm/rss/5ec4f43bf654bbcab4231d7f" value="https://stand.fm/rss/5ec4f43bf654bbcab4231d7f">
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="rssUrl" placeholder="例: https://stand.fm/rss/5ec4f43bf654bbcab4231d7f" style="flex: 1;">
+        <button type="button" onclick="clearField('rssUrl')" class="clear-btn">×</button>
+      </div>
       <div class="example">stand.fmの番組ページで「RSS」を右クリックしてURLをコピー</div>
     </div>
 
     <div class="form-group">
       <label for="applePodcastId">Apple Podcastの番組ID</label>
-      <input type="text" id="applePodcastId" placeholder="例: 1821673136" value="1821673136">
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="applePodcastId" placeholder="例: 1821673136" style="flex: 1;">
+        <button type="button" onclick="clearField('applePodcastId')" class="clear-btn">×</button>
+      </div>
       <div class="example">Apple PodcastのURLの「id」の後の数字（例: https://podcasts.apple.com/jp/podcast/id1821673136 の場合「1821673136」）</div>
     </div>
 
     <div class="form-group">
+      <label for="spotifyShowId">Spotifyの番組ID</label>
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="spotifyShowId" placeholder="例: 6mDQ3s4QzXHsmDsro0sQ8e" style="flex: 1;">
+        <button type="button" onclick="clearField('spotifyShowId')" class="clear-btn">×</button>
+      </div>
+      <div class="example">Spotifyの番組URLの「show/」の後の文字列（例: https://open.spotify.com/show/6mDQ3s4QzXHsmDsro0sQ8e の場合「6mDQ3s4QzXHsmDsro0sQ8e」）</div>
+    </div>
+
+    <div class="form-group">
       <label for="summary">サマリーテキスト</label>
-      <input type="text" id="summary" value="バイブコーディング中のトラブル体験と学びを共有。">
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="summary" placeholder="例: バイブコーディング中のトラブル体験と学びを共有。" style="flex: 1;">
+        <button type="button" onclick="clearField('summary')" class="clear-btn">×</button>
+      </div>
     </div>
 
     <div class="form-group">
       <label for="hashtags">ハッシュタグ</label>
-      <input type="text" id="hashtags" value="#バイブコーディング #AI活用 #生成AI #ちょっとai #ポッドキャスト">
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="hashtags" placeholder="例: #バイブコーディング #AI活用 #生成AI #ちょっとai #ポッドキャスト" style="flex: 1;">
+        <button type="button" onclick="clearField('hashtags')" class="clear-btn">×</button>
+      </div>
     </div>
 
     <button class="btn" onclick="generatePost()">投稿文を生成</button>
@@ -157,6 +195,7 @@
     async function generatePost() {
       const rssUrl = document.getElementById('rssUrl').value.trim();
       const applePodcastId = document.getElementById('applePodcastId').value.trim();
+      const spotifyShowId = document.getElementById('spotifyShowId').value.trim();
       const summary = document.getElementById('summary').value.trim();
       const hashtags = document.getElementById('hashtags').value.trim();
       const postText = document.getElementById('postText');
@@ -203,8 +242,19 @@
         const link = item.querySelector("link").textContent;
         const id = link.split('/').pop();
         const appleUrl = `https://podcasts.apple.com/jp/podcast/id${applePodcastId}?i=${id}`;
+        const spotifyUrl = spotifyShowId ? `https://open.spotify.com/episode/${id}?si=${spotifyShowId}` : '';
         
-        const post = `${title}\n\nstand.fm↓\n${link}\nApple Podcast↓\n${appleUrl}\n\n${summary}\n${hashtags}`;
+        let post = `${title}\n\nstand.fm↓\n${link}`;
+        
+        if (applePodcastId) {
+          post += `\nApple Podcast↓\n${appleUrl}`;
+        }
+        
+        if (spotifyShowId) {
+          post += `\nSpotify↓\n${spotifyUrl}`;
+        }
+        
+        post += `\n\n${summary}\n${hashtags}`;
         postText.value = post;
         
         // コピーボタンを有効化
@@ -220,6 +270,10 @@
         generateBtn.textContent = '投稿文を生成';
         generateBtn.style.opacity = '1';
       }
+    }
+
+    function clearField(fieldId) {
+      document.getElementById(fieldId).value = '';
     }
 
     function copyText() {
