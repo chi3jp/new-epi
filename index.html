@@ -75,7 +75,6 @@
     .btn:hover { 
       background: #0d8ddb; 
     }
-    
     .clear-btn {
       background: #f1f1f1;
       border: 1px solid #ddd;
@@ -88,7 +87,6 @@
       padding: 0 12px;
       transition: background 0.3s;
     }
-    
     .clear-btn:hover {
       background: #e0e0e0;
     }
@@ -159,9 +157,6 @@
 
     <button class="btn" onclick="generatePost()">投稿文を生成</button>
 
-    <!-- ソースを確認ボタンは非表示にしました -->
-    <button id="viewSourceBtn" onclick="viewSource()" style="display: none;">ソースを確認</button>
-
     <div class="form-group" style="margin-top: 2em;">
       <label for="postText">生成された投稿文</label>
       <textarea id="postText" readonly></textarea>
@@ -169,18 +164,11 @@
 
     <button class="btn" onclick="copyText()">投稿文をコピー</button>
     <div id="copiedMsg">コピーしました！</div>
-
-
   </div>
 
   <script>
     // 保存用のフィールドIDの配列
     const formFields = ['rssUrl', 'applePodcastId', 'spotifyShowId', 'hashtags'];
-    
-    // 古いサマリーデータを削除
-    if (localStorage.getItem('summary')) {
-      localStorage.removeItem('summary');
-    }
 
     // フォームの値を保存
     function saveFormData() {
@@ -204,46 +192,20 @@
         // 入力イベントリスナーを追加
         element.addEventListener('input', saveFormData);
       });
-
-      // URLパラメータをチェック（既存の機能を維持）
-      const urlParams = new URLSearchParams(window.location.search);
-      const rssUrl = urlParams.get('rss');
-      const appleId = urlParams.get('appleId');
-      
-      if (rssUrl) {
-        document.getElementById('rssUrl').value = rssUrl;
-        saveFormData(); // URLパラメータで上書きした場合も保存
-      }
-      if (appleId) {
-        document.getElementById('applePodcastId').value = appleId;
-        saveFormData(); // URLパラメータで上書きした場合も保存
-      }
-      
-      // パラメータがあれば自動で生成
-      if (rssUrl && appleId) {
-        generatePost();
-      }
     });
 
     // タイトルからハッシュタグを自動生成
     function generateHashtags(title) {
-      // よく使われるハッシュタグ（重複を避けるため一度Setにまとめます）
       const commonHashtags = ['#standfm', '#ポッドキャスト', '#podcast'];
-      
-      // 1. 先頭の番号など（#61 61.など）は消す
       const cleanTitle = title.replace(/^\s*[#＃]?\d+[\.\s]*/, '').trim();
-      
-      // 2. タイトルから単語を抽出する
       const words = [];
       let currentWord = '';
-      
       for (const char of cleanTitle) {
-        const isTargetChar = 
-          /[\u4e00-\u9faf]/.test(char) || // 漢字
-          /[\u3040-\u309f]/.test(char) || // ひらがな
-          /[\u30a0-\u30ff]/.test(char) || // カタカナ
-          /[a-zA-Z0-9]/.test(char);       // 英数字
-          
+        const isTargetChar =
+          /[\u4e00-\u9faf]/.test(char) ||
+          /[\u3040-\u309f]/.test(char) ||
+          /[\u30a0-\u30ff]/.test(char) ||
+          /[a-zA-Z0-9]/.test(char);
         if (isTargetChar) {
           currentWord += char;
         } else if (currentWord) {
@@ -251,24 +213,15 @@
           currentWord = '';
         }
       }
-      
       if (currentWord) {
         words.push(currentWord);
       }
-      
-      // 3. 1文字だけの単語は除外
       const filteredWords = words.filter(word => word.length > 1);
-      
-      // 4. ハッシュタグセットを作成
       const hashtagSet = new Set();
       filteredWords.forEach(word => {
         hashtagSet.add(`#${word}`);
       });
-      
-      // 5. 共通ハッシュタグも追加
       commonHashtags.forEach(tag => hashtagSet.add(tag));
-      
-      // 6. 配列にして半角スペースで連結して返す
       return Array.from(hashtagSet).join(' ');
     }
 
@@ -311,32 +264,26 @@
           throw new Error('有効なエピソードが見つかりませんでした');
         }
 
-        // タイトルとstand.fmエピソードリンク
         const title = item.querySelector("title") ? item.querySelector("title").textContent : '';
         const link = item.querySelector("link") ? item.querySelector("link").textContent : '';
 
         let post = '';
 
-        // タイトル
         if (title) {
           post += `${title}\n\n`;
         }
-        // stand.fm個別リンク
         if (link) {
           post += `stand.fm↓\n${link}\n\n`;
         }
 
-        // Apple Podcast 番組トップへのリンク
         if (applePodcastId) {
           post += `Apple Podcast↓\nhttps://podcasts.apple.com/jp/podcast/id${applePodcastId}\n\n`;
         }
 
-        // Spotify 番組トップへのリンク
         if (spotifyShowId) {
           post += `Spotify↓\nhttps://open.spotify.com/show/${spotifyShowId}\n\n`;
         }
 
-        // ハッシュタグ
         let hashtagsText = '';
         const hashtagsField = document.getElementById('hashtags');
         if (!hashtagsField.value.trim() && title) {
@@ -350,9 +297,7 @@
           post += `${hashtagsText}`;
         }
 
-        // 余分な改行を整形して表示
         postText.value = post.replace(/\n{3,}/g, '\n\n').trim();
-
         document.querySelector('button[onclick="copyText()"]').style.display = 'block';
 
       } catch (error) {
@@ -368,7 +313,7 @@
 
     function clearField(fieldId) {
       document.getElementById(fieldId).value = '';
-      localStorage.removeItem(fieldId); // ローカルストレージからも削除
+      localStorage.removeItem(fieldId);
     }
 
     function copyText() {
@@ -377,10 +322,8 @@
         alert('先に投稿文を生成してください');
         return;
       }
-      
       textArea.select();
       document.execCommand('copy');
-      
       const copiedMsg = document.getElementById('copiedMsg');
       copiedMsg.style.display = 'block';
       setTimeout(() => { 
