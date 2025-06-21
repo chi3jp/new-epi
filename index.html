@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>stand.fm SNS投稿文メーカー</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: 'メイリオ', sans-serif; background: #f8f9fa; padding: 2em; }
+    #postText { width: 100%; height: 220px; font-size: 1.1em; padding: 1em; border-radius: 8px; border: 1px solid #bbb; }
+    .copyBtn { margin-top: 1em; padding: 0.6em 2em; font-size: 1.1em; border-radius: 8px; background: #1da1f2; color: #fff; border: none; cursor: pointer; }
+    .copyBtn:active { background: #0d8ddb; }
+  </style>
+</head>
+<body>
+  <h2>stand.fm 最新エピソード SNS投稿文メーカー</h2>
+  <textarea id="postText" readonly></textarea>
+  <br>
+  <button class="copyBtn" onclick="copyText()">コピー</button>
+  <div id="copiedMsg" style="color: #1da1f2; margin-top:1em; font-weight: bold; display:none;">コピーしました！</div>
+  <script>
+    // RSSパース&投稿文自動生成
+    fetch('https://stand.fm/rss/5ec4f43bf654bbcab4231d7f')
+      .then(response => response.text())
+      .then(str => {
+        const parser = new window.DOMParser();
+        const doc = parser.parseFromString(str, "application/xml");
+        const item = doc.querySelector("item");
+        const title = item.querySelector("title").textContent;
+        const link = item.querySelector("link").textContent;
+        const id = link.split('/').pop();
+        const appleUrl = `https://podcasts.apple.com/jp/podcast/id1821673136?i=${id}`;
+        const summary = 'バイブコーディング中のトラブル体験と学びを共有。'; // 必要に応じて自動化OK
+        const hashtags = '#バイブコーディング #AI活用 #生成AI #ちょっとai #ポッドキャスト';
+        const post = `${title}\n\nstand.fm↓\n${link}\nApple Podcast↓\n${appleUrl}\n\n${summary}\n${hashtags}`;
+        document.getElementById('postText').value = post;
+      });
+
+    function copyText() {
+      const textArea = document.getElementById('postText');
+      textArea.select();
+      document.execCommand('copy');
+      document.getElementById('copiedMsg').style.display = 'block';
+      setTimeout(() => { document.getElementById('copiedMsg').style.display = 'none'; }, 1800);
+    }
+  </script>
+</body>
+</html>
