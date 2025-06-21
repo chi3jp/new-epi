@@ -125,29 +125,21 @@
       });
     });
 
-    // タイトルから重要なキーワードを抽出してハッシュタグを生成
+    // タイトルをハッシュタグに変換
     function generateHashtags(title) {
-      // 除外する単語（助詞、助動詞、接続詞など）
-      const stopWords = new Set([
-        'こと', 'もの', 'とき', 'ため', 'よう', 'そう', 'これ', 'それ', 'あれ', 'この',
-        'その', 'あの', 'ここ', 'そこ', 'あそこ', 'どこ', 'だれ', 'なに', 'なん', 'さん',
-        'です', 'ます', 'です', 'ました', 'ました', 'そして', 'しかし', 'だから', 'でも',
-        'が', 'は', 'の', 'に', 'を', 'で', 'と', 'や', 'か', 'も', 'は', 'の', 'に',
-        'を', 'で', 'と', 'や', 'か', 'も', 'が', 'は', 'の', 'に', 'を', 'で', 'と', 'や', 'か', 'も'
-      ]);
-
-      // タイトルから名詞っぽい単語を抽出（2文字以上の単語）
-      const words = (title.match(/[\u4e00-\u9faf\u30a0-\u30ffa-zA-Z]{2,}/g) || [])
-        .filter(word => !stopWords.has(word));
+      // タイトルから不要な文字を削除してハッシュタグに変換
+      const cleanTitle = title
+        .replace(/[\s\n\r]+/g, '')
+        .replace(/[^\u4e00-\u9faf\u3040-\u309f\u30a0-\u30ffa-zA-Z0-9]/g, '');
       
-      // キーワードを抽出（最初の3つの重要な単語を取得）
-      const importantKeywords = words.slice(0, 3).map(word => `#${word}`);
+      // タイトルのハッシュタグ（最大20文字）
+      const titleTag = cleanTitle ? `#${cleanTitle.substring(0, 20)}` : '';
       
-      // 共通のハッシュタグを追加
+      // 共通のハッシュタグ
       const commonTags = ['#standfm', '#ポッドキャスト', '#podcast', '#Spotify'];
       
-      // 重複を避けて結合
-      const allTags = [...new Set([...importantKeywords, ...commonTags])];
+      // 結合（タイトルタグが空でない場合のみ追加）
+      const allTags = [...(titleTag ? [titleTag] : []), ...commonTags];
       
       return allTags.join(' ');
     }
