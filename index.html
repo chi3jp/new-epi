@@ -218,15 +218,15 @@
 
     // タイトルからハッシュタグを自動生成
     function generateHashtags(title) {
-      // よく使われるハッシュタグ
+      // よく使われるハッシュタグ（重複を避けるため一度Setにまとめます）
       const commonHashtags = ['#standfm', '#ポッドキャスト', '#podcast'];
       
-      // 1. 先頭の番号を完全に削除（「#61」や「61.」など）
+      // 1. 先頭の番号など（#61 61.など）は消す
       const cleanTitle = title.replace(/^\s*[#＃]?\d+[\.\s]*/, '').trim();
       
-      // 2. 日本語の単語ごとに分割（形態素解析的な簡易的な実装）
-      // ・漢字、ひらがな、カタカナ、英数字の連続を単語として扱う
-      // ・記号は削除
+      // 2. タイトルから単語を抽出する（英語はスペース、日本語は連続文字ごとに）
+      //    （英語ならスペース区切り、日本語は今まで通りの連続文字）
+      //    ここでは、「漢字・ひらがな・カタカナ・英数字」ごとのまとまりを抽出
       const words = [];
       let currentWord = '';
       
@@ -234,33 +234,29 @@
         if (/[\u4e00-\u9faf]/.test(char) || // 漢字
             /[\u3040-\u309f]/.test(char) || // ひらがな
             /[\u30a0-\u30ff]/.test(char) || // カタカナ
-            /[\w\d]/.test(char)) {           // 英数字
+            /[a-zA-Z0-9]/.test(char)) {     // 英数字
           currentWord += char;
         } else if (currentWord) {
           words.push(currentWord);
           currentWord = '';
         }
       }
-      // 最後の単語を追加
       if (currentWord) words.push(currentWord);
       
-      // 1文字の単語を除外
+      // 3. 1文字だけの単語は除外
       const filteredWords = words.filter(word => word.length > 1);
       
-      // 3. ユニークなハッシュタグのセットを作成
+      // 4. ハッシュタグセットを作成
       const hashtagSet = new Set();
-      
-      // 4. タイトルから生成したハッシュタグを追加
       filteredWords.forEach(word => {
-        if (!/^[#＃]/.test(word)) {  // まだ#が付いていない場合のみ追加
-          hashtagSet.add(`#${word}`);
-        }
+        // 頭に#がついていなければつける
+        hashtagSet.add(`#${word}`);
       });
       
-      // 5. 共通のハッシュタグを追加（重複しないように）
+      // 5. 共通ハッシュタグも追加
       commonHashtags.forEach(tag => hashtagSet.add(tag));
       
-      // 6. 配列に変換してスペースで結合
+      // 6. 配列にして半角スペースで連結して返す
       return Array.from(hashtagSet).join(' ');
     }
 
