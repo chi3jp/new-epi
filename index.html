@@ -219,6 +219,31 @@
       }
     });
 
+    // タイトルからサマリーとハッシュタグを自動生成
+    function generateSummaryAndHashtags(title) {
+      // よく使われるハッシュタグ
+      const commonHashtags = ['#standfm', '#ポッドキャスト', '#podcast'];
+      
+      // タイトルからキーワードを抽出してハッシュタグを生成
+      const keywords = title
+        .replace(/[【】『』「」()\[\]|]/g, ' ') // 記号をスペースに
+        .split(/[\s・、,]+/) // 区切り文字で分割
+        .filter(word => word.length > 1) // 1文字の単語は除外
+        .filter(word => !/^(の|に|は|を|が|と|で|も|へ|や|か|な|だ|です|ます|です|する|こと|ため|よう|たち|さん|ちゃん|くん|様|さま)$/.test(word)) // ストップワードを除外
+        .slice(0, 3); // 最大3つのキーワードを取得
+      
+      // キーワードをハッシュタグに変換
+      const generatedHashtags = [...new Set([
+        ...keywords.map(word => `#${word}`),
+        ...commonHashtags
+      ])].join(' ');
+      
+      // サマリーを生成（タイトルをそのまま使用）
+      const summary = `「${title}」について話しました！`;
+      
+      return { summary, hashtags: generatedHashtags };
+    }
+
     async function generatePost() {
       const rssUrl = document.getElementById('rssUrl').value.trim();
       const applePodcastId = document.getElementById('applePodcastId').value.trim();
@@ -290,6 +315,25 @@
           post += summary ? `\n${hashtags}` : `\n\n${hashtags}`;
         }
         postText.value = post;
+        
+        // サマリーとハッシュタグが空の場合、自動生成
+        const summaryField = document.getElementById('summary');
+        const hashtagsField = document.getElementById('hashtags');
+        
+        if ((!summaryField.value.trim() || !hashtagsField.value.trim()) && title) {
+          const { summary, hashtags } = generateSummaryAndHashtags(title);
+          
+          if (!summaryField.value.trim()) {
+            summaryField.value = summary;
+          }
+          
+          if (!hashtagsField.value.trim()) {
+            hashtagsField.value = hashtags;
+          }
+          
+          // ローカルストレージに保存
+          saveFormData();
+        }
         
         // コピーボタンを有効化
         document.querySelector('button[onclick="copyText()"]').style.display = 'block';
