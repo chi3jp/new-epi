@@ -5,42 +5,240 @@
   <title>stand.fm SNS投稿文メーカー</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { font-family: 'メイリオ', sans-serif; background: #f8f9fa; padding: 2em; }
-    #postText { width: 100%; height: 220px; font-size: 1.1em; padding: 1em; border-radius: 8px; border: 1px solid #bbb; }
-    .copyBtn { margin-top: 1em; padding: 0.6em 2em; font-size: 1.1em; border-radius: 8px; background: #1da1f2; color: #fff; border: none; cursor: pointer; }
-    .copyBtn:active { background: #0d8ddb; }
+    body { 
+      font-family: 'メイリオ', 'Hiragino Sans', sans-serif; 
+      background: #f8f9fa; 
+      padding: 2em;
+      max-width: 800px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    .container {
+      background: white;
+      padding: 2em;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h2 { 
+      color: #333;
+      margin-top: 0;
+      text-align: center;
+    }
+    .form-group {
+      margin-bottom: 1.5em;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5em;
+      font-weight: bold;
+      color: #555;
+    }
+    input[type="text"], 
+    textarea {
+      width: 100%;
+      padding: 0.8em;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 1em;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+    input[type="text"] {
+      height: 40px;
+    }
+    #postText { 
+      height: 200px; 
+      font-size: 1em; 
+      resize: vertical;
+    }
+    .btn { 
+      display: block;
+      width: 100%;
+      margin-top: 1.5em; 
+      padding: 0.8em; 
+      font-size: 1.1em; 
+      border-radius: 6px; 
+      background: #1da1f2; 
+      color: #fff; 
+      border: none; 
+      cursor: pointer;
+      transition: background 0.3s;
+      text-align: center;
+      text-decoration: none;
+    }
+    .btn:hover { 
+      background: #0d8ddb; 
+    }
+    .btn:active { 
+      transform: translateY(1px);
+    }
+    #copiedMsg { 
+      text-align: center;
+      color: #1da1f2; 
+      margin: 1em 0;
+      font-weight: bold; 
+      display: none;
+    }
+    .example {
+      font-size: 0.85em;
+      color: #666;
+      margin-top: 0.3em;
+      font-style: italic;
+    }
+    @media (max-width: 600px) {
+      body {
+        padding: 1em;
+      }
+      .container {
+        padding: 1em;
+      }
+    }
   </style>
 </head>
 <body>
-  <h2>stand.fm 最新エピソード SNS投稿文メーカー</h2>
-  <textarea id="postText" readonly></textarea>
-  <br>
-  <button class="copyBtn" onclick="copyText()">コピー</button>
-  <div id="copiedMsg" style="color: #1da1f2; margin-top:1em; font-weight: bold; display:none;">コピーしました！</div>
+  <div class="container">
+    <h2>stand.fm SNS投稿文メーカー</h2>
+    
+    <div class="form-group">
+      <label for="rssUrl">stand.fmのRSS URL</label>
+      <input type="text" id="rssUrl" placeholder="例: https://stand.fm/rss/5ec4f43bf654bbcab4231d7f" value="https://stand.fm/rss/5ec4f43bf654bbcab4231d7f">
+      <div class="example">stand.fmの番組ページで「RSS」を右クリックしてURLをコピー</div>
+    </div>
+
+    <div class="form-group">
+      <label for="applePodcastId">Apple Podcastの番組ID</label>
+      <input type="text" id="applePodcastId" placeholder="例: 1821673136" value="1821673136">
+      <div class="example">Apple PodcastのURLの「id」の後の数字（例: https://podcasts.apple.com/jp/podcast/id1821673136 の場合「1821673136」）</div>
+    </div>
+
+    <div class="form-group">
+      <label for="summary">サマリーテキスト</label>
+      <input type="text" id="summary" value="バイブコーディング中のトラブル体験と学びを共有。">
+    </div>
+
+    <div class="form-group">
+      <label for="hashtags">ハッシュタグ</label>
+      <input type="text" id="hashtags" value="#バイブコーディング #AI活用 #生成AI #ちょっとai #ポッドキャスト">
+    </div>
+
+    <button class="btn" onclick="generatePost()">投稿文を生成</button>
+
+    <div class="form-group" style="margin-top: 2em;">
+      <label for="postText">生成された投稿文</label>
+      <textarea id="postText" readonly></textarea>
+    </div>
+
+    <button class="btn" onclick="copyText()">投稿文をコピー</button>
+    <div id="copiedMsg">コピーしました！</div>
+
+    <a href="https://github.com/chi3jp/new-epi" class="btn" target="_blank" style="background: #24292f; margin-top: 2em;">
+      GitHubでソースを確認
+    </a>
+  </div>
+
   <script>
-    // RSSパース&投稿文自動生成
-    fetch('https://stand.fm/rss/5ec4f43bf654bbcab4231d7f')
-      .then(response => response.text())
-      .then(str => {
-        const parser = new window.DOMParser();
-        const doc = parser.parseFromString(str, "application/xml");
+    // ページ読み込み時にURLパラメータをチェック
+    document.addEventListener('DOMContentLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const rssUrl = urlParams.get('rss');
+      const appleId = urlParams.get('appleId');
+      
+      if (rssUrl) {
+        document.getElementById('rssUrl').value = rssUrl;
+      }
+      if (appleId) {
+        document.getElementById('applePodcastId').value = appleId;
+      }
+      
+      // パラメータがあれば自動で生成
+      if (rssUrl && appleId) {
+        generatePost();
+      }
+    });
+
+    async function generatePost() {
+      const rssUrl = document.getElementById('rssUrl').value.trim();
+      const applePodcastId = document.getElementById('applePodcastId').value.trim();
+      const summary = document.getElementById('summary').value.trim();
+      const hashtags = document.getElementById('hashtags').value.trim();
+      const postText = document.getElementById('postText');
+      const generateBtn = document.querySelector('button[onclick="generatePost()"]');
+
+      if (!rssUrl) {
+        alert('stand.fmのRSS URLを入力してください');
+        return;
+      }
+
+      if (!applePodcastId) {
+        alert('Apple Podcastの番組IDを入力してください');
+        return;
+      }
+
+      // ボタンを無効化
+      generateBtn.disabled = true;
+      generateBtn.textContent = '取得中...';
+      generateBtn.style.opacity = '0.7';
+      postText.placeholder = 'エピソード情報を取得中...';
+
+      try {
+        const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error('RSSの取得に失敗しました');
+        }
+        
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(data.contents, "application/xml");
+        const errorNode = doc.querySelector('parsererror');
+        
+        if (errorNode) {
+          throw new Error('RSSの解析に失敗しました');
+        }
+        
         const item = doc.querySelector("item");
+        if (!item) {
+          throw new Error('有効なエピソードが見つかりませんでした');
+        }
+        
         const title = item.querySelector("title").textContent;
         const link = item.querySelector("link").textContent;
         const id = link.split('/').pop();
-        const appleUrl = `https://podcasts.apple.com/jp/podcast/id1821673136?i=${id}`;
-        const summary = 'バイブコーディング中のトラブル体験と学びを共有。'; // 必要に応じて自動化OK
-        const hashtags = '#バイブコーディング #AI活用 #生成AI #ちょっとai #ポッドキャスト';
+        const appleUrl = `https://podcasts.apple.com/jp/podcast/id${applePodcastId}?i=${id}`;
+        
         const post = `${title}\n\nstand.fm↓\n${link}\nApple Podcast↓\n${appleUrl}\n\n${summary}\n${hashtags}`;
-        document.getElementById('postText').value = post;
-      });
+        postText.value = post;
+        
+        // コピーボタンを有効化
+        document.querySelector('button[onclick="copyText()"]').style.display = 'block';
+        
+      } catch (error) {
+        console.error('エラーが発生しました:', error);
+        postText.value = '';
+        postText.placeholder = `エラー: ${error.message}`;
+      } finally {
+        // ボタンを元に戻す
+        generateBtn.disabled = false;
+        generateBtn.textContent = '投稿文を生成';
+        generateBtn.style.opacity = '1';
+      }
+    }
 
     function copyText() {
       const textArea = document.getElementById('postText');
+      if (!textArea.value) {
+        alert('先に投稿文を生成してください');
+        return;
+      }
+      
       textArea.select();
       document.execCommand('copy');
-      document.getElementById('copiedMsg').style.display = 'block';
-      setTimeout(() => { document.getElementById('copiedMsg').style.display = 'none'; }, 1800);
+      
+      const copiedMsg = document.getElementById('copiedMsg');
+      copiedMsg.style.display = 'block';
+      setTimeout(() => { 
+        copiedMsg.style.display = 'none'; 
+      }, 2000);
     }
   </script>
 </body>
