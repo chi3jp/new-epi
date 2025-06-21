@@ -239,7 +239,7 @@
       ])].join(' ');
       
       // サマリーを生成（タイトルをそのまま使用）
-      const summary = `「${title}」について話しました！`;
+      const summary = `${title}`;
       
       return { summary, hashtags: generatedHashtags };
     }
@@ -306,14 +306,18 @@
           post += `\nSpotify↓\n${spotifyUrl}`;
         }
         
-        // サマリーとハッシュタグを追加（空でない場合のみ）
-        if (summary) {
-          post += `\n\n${summary}`;
+        // 現在のサマリーとハッシュタグを取得（自動生成されたものも含む）
+        const currentSummary = document.getElementById('summary').value.trim();
+        const currentHashtags = document.getElementById('hashtags').value.trim();
+        
+        // 投稿文に追加
+        if (currentSummary) {
+          post += `\n\n${currentSummary}`;
         }
-        if (hashtags) {
-          // ハッシュタグの前に改行を追加（サマリーがある場合とない場合で適切に処理）
-          post += summary ? `\n${hashtags}` : `\n\n${hashtags}`;
+        if (currentHashtags) {
+          post += currentSummary ? `\n${currentHashtags}` : `\n\n${currentHashtags}`;
         }
+        
         postText.value = post;
         
         // サマリーとハッシュタグが空の場合、自動生成
