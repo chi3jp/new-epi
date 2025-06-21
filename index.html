@@ -231,9 +231,11 @@
       // 7. 重複を削除
       // 8. 先頭の単語を取得（最大3つ）
       // 9. ハッシュタグに変換
+      // 先に先頭の番号を削除
+      const cleanTitle = title.replace(/^\s*\d+\.?\s*/, '');
+      
       const titleHashtags = [...new Set(
-        title
-          .replace(/^\s*\d+\.?\s*/, '')  // 先頭の番号を削除
+        cleanTitle
           .replace(/[【】『』「」()\[\]|・、,]/g, ' ')  // 記号をスペースに
           .split(/\s+/)
           .filter(word => word.length > 1)
