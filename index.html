@@ -323,12 +323,13 @@
         const appleUrl = `https://podcasts.apple.com/jp/podcast/id${applePodcastId}?i=${id}`;
         const spotifyUrl = spotifyShowId ? `https://open.spotify.com/episode/${id}?si=${spotifyShowId}` : '';
         
+        // 必ずstand.fmのリンクを含める
         let post = `${title}\n\nstand.fm↓\n${link}`;
         
-        if (applePodcastId) {
-          post += `\nApple Podcast↓\n${appleUrl}`;
-        }
+        // Apple Podcastのリンクを追加
+        post += `\nApple Podcast↓\n${appleUrl}`;
         
+        // Spotifyのリンクを追加（ある場合のみ）
         if (spotifyShowId) {
           post += `\nSpotify↓\n${spotifyUrl}`;
         }
