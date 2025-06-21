@@ -323,15 +323,15 @@
         const appleUrl = `https://podcasts.apple.com/jp/podcast/id${applePodcastId}?i=${id}`;
         const spotifyUrl = spotifyShowId ? `https://open.spotify.com/episode/${id}?si=${spotifyShowId}` : '';
         
-        // 必ずstand.fmのリンクを含める
-        let post = `${title}\n\nstand.fm↓\n${link}`;
+        // 投稿文を構築
+        let post = `${title}\n\n`;
         
-        // Apple Podcastのリンクを追加
-        post += `\nApple Podcast↓\n${appleUrl}`;
+        // 各プラットフォームのリンクを追加
+        post += `stand.fm↓\n${link}\n\n`;
+        post += `Apple Podcast↓\n${appleUrl}`;
         
-        // Spotifyのリンクを追加（ある場合のみ）
         if (spotifyShowId) {
-          post += `\nSpotify↓\n${spotifyUrl}`;
+          post += `\n\nSpotify↓\n${spotifyUrl}`;
         }
         
         // ハッシュタグを取得して投稿文に追加
@@ -348,12 +348,17 @@
           hashtagsText = hashtagsField.value.trim();
         }
         
-        // ハッシュタグを投稿文に追加
+        // ハッシュタグを投稿文に追加（改行を1つだけ入れる）
         if (hashtagsText) {
-          post += `\n\n${hashtagsText}`;
+          // すでに改行が2つ以上続いていないか確認
+          if (!post.endsWith('\n\n')) {
+            post += '\n';
+          }
+          post += `${hashtagsText}`;
         }
         
-        postText.value = post;
+        // 余分な改行を削除してから表示
+        postText.value = post.replace(/\n{3,}/g, '\n\n');
         
         // コピーボタンを有効化
         document.querySelector('button[onclick="copyText()"]').style.display = 'block';
