@@ -334,21 +334,25 @@
         }
         
         // ハッシュタグを取得して投稿文に追加
-        const currentHashtags = document.getElementById('hashtags').value.trim();
-        if (currentHashtags) {
-          post += `\n\n${currentHashtags}`;
+        let hashtagsText = '';
+        const hashtagsField = document.getElementById('hashtags');
+        
+        // ハッシュタグが空の場合は自動生成
+        if (!hashtagsField.value.trim() && title) {
+          hashtagsText = generateHashtags(title);
+          hashtagsField.value = hashtagsText;
+          // ローカルストレージに保存
+          saveFormData();
+        } else {
+          hashtagsText = hashtagsField.value.trim();
+        }
+        
+        // ハッシュタグを投稿文に追加
+        if (hashtagsText) {
+          post += `\n\n${hashtagsText}`;
         }
         
         postText.value = post;
-        
-        // ハッシュタグが空の場合、自動生成
-        const hashtagsField = document.getElementById('hashtags');
-        if (!hashtagsField.value.trim() && title) {
-          const hashtags = generateHashtags(title);
-          hashtagsField.value = hashtags;
-          // ローカルストレージに保存
-          saveFormData();
-        }
         
         // コピーボタンを有効化
         document.querySelector('button[onclick="copyText()"]').style.display = 'block';
