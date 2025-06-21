@@ -224,24 +224,28 @@
       // 1. 先頭の番号など（#61 61.など）は消す
       const cleanTitle = title.replace(/^\s*[#＃]?\d+[\.\s]*/, '').trim();
       
-      // 2. タイトルから単語を抽出する（英語はスペース、日本語は連続文字ごとに）
-      //    （英語ならスペース区切り、日本語は今まで通りの連続文字）
-      //    ここでは、「漢字・ひらがな・カタカナ・英数字」ごとのまとまりを抽出
+      // 2. タイトルから単語を抽出する
       const words = [];
       let currentWord = '';
       
       for (const char of cleanTitle) {
-        if (/[\u4e00-\u9faf]/.test(char) || // 漢字
-            /[\u3040-\u309f]/.test(char) || // ひらがな
-            /[\u30a0-\u30ff]/.test(char) || // カタカナ
-            /[a-zA-Z0-9]/.test(char)) {     // 英数字
+        const isTargetChar = 
+          /[\u4e00-\u9faf]/.test(char) || // 漢字
+          /[\u3040-\u309f]/.test(char) || // ひらがな
+          /[\u30a0-\u30ff]/.test(char) || // カタカナ
+          /[a-zA-Z0-9]/.test(char);       // 英数字
+          
+        if (isTargetChar) {
           currentWord += char;
         } else if (currentWord) {
           words.push(currentWord);
           currentWord = '';
         }
       }
-      if (currentWord) words.push(currentWord);
+      
+      if (currentWord) {
+        words.push(currentWord);
+      }
       
       // 3. 1文字だけの単語は除外
       const filteredWords = words.filter(word => word.length > 1);
@@ -249,7 +253,6 @@
       // 4. ハッシュタグセットを作成
       const hashtagSet = new Set();
       filteredWords.forEach(word => {
-        // 頭に#がついていなければつける
         hashtagSet.add(`#${word}`);
       });
       
