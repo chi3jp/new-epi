@@ -276,17 +276,11 @@
       const rssUrl = document.getElementById('rssUrl').value.trim();
       const applePodcastId = document.getElementById('applePodcastId').value.trim();
       const spotifyShowId = document.getElementById('spotifyShowId').value.trim();
-      const hashtags = document.getElementById('hashtags').value.trim();
       const postText = document.getElementById('postText');
       const generateBtn = document.querySelector('button[onclick="generatePost()"]');
 
       if (!rssUrl) {
         alert('stand.fmのRSS URLを入力してください');
-        return;
-      }
-
-      if (!applePodcastId) {
-        alert('Apple Podcastの番組IDを入力してください');
         return;
       }
 
@@ -299,76 +293,73 @@
       try {
         const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
         const data = await response.json();
-        
+
         if (!response.ok) {
           throw new Error('RSSの取得に失敗しました');
         }
-        
+
         const parser = new DOMParser();
         const doc = parser.parseFromString(data.contents, "application/xml");
         const errorNode = doc.querySelector('parsererror');
-        
+
         if (errorNode) {
           throw new Error('RSSの解析に失敗しました');
         }
-        
+
         const item = doc.querySelector("item");
         if (!item) {
           throw new Error('有効なエピソードが見つかりませんでした');
         }
-        
-        const title = item.querySelector("title").textContent;
-        const link = item.querySelector("link").textContent;
-        const id = link.split('/').pop();
-        const appleUrl = `https://podcasts.apple.com/jp/podcast/id${applePodcastId}?i=${id}`;
-        const spotifyUrl = spotifyShowId ? `https://open.spotify.com/episode/${id}?si=${spotifyShowId}` : '';
-        
-        // 投稿文を構築
-        let post = `${title}\n\n`;
-        
-        // 各プラットフォームのリンクを追加
-        post += `stand.fm↓\n${link}\n\n`;
-        post += `Apple Podcast↓\n${appleUrl}`;
-        
-        if (spotifyShowId) {
-          post += `\n\nSpotify↓\n${spotifyUrl}`;
+
+        // タイトルとstand.fmエピソードリンク
+        const title = item.querySelector("title") ? item.querySelector("title").textContent : '';
+        const link = item.querySelector("link") ? item.querySelector("link").textContent : '';
+
+        let post = '';
+
+        // タイトル
+        if (title) {
+          post += `${title}\n\n`;
         }
-        
-        // ハッシュタグを取得して投稿文に追加
+        // stand.fm個別リンク
+        if (link) {
+          post += `stand.fm↓\n${link}\n\n`;
+        }
+
+        // Apple Podcast 番組トップへのリンク
+        if (applePodcastId) {
+          post += `Apple Podcast↓\nhttps://podcasts.apple.com/jp/podcast/id${applePodcastId}\n\n`;
+        }
+
+        // Spotify 番組トップへのリンク
+        if (spotifyShowId) {
+          post += `Spotify↓\nhttps://open.spotify.com/show/${spotifyShowId}\n\n`;
+        }
+
+        // ハッシュタグ
         let hashtagsText = '';
         const hashtagsField = document.getElementById('hashtags');
-        
-        // ハッシュタグが空の場合は自動生成
         if (!hashtagsField.value.trim() && title) {
           hashtagsText = generateHashtags(title);
           hashtagsField.value = hashtagsText;
-          // ローカルストレージに保存
           saveFormData();
         } else {
           hashtagsText = hashtagsField.value.trim();
         }
-        
-        // ハッシュタグを投稿文に追加（改行を1つだけ入れる）
         if (hashtagsText) {
-          // すでに改行が2つ以上続いていないか確認
-          if (!post.endsWith('\n\n')) {
-            post += '\n';
-          }
           post += `${hashtagsText}`;
         }
-        
-        // 余分な改行を削除してから表示
-        postText.value = post.replace(/\n{3,}/g, '\n\n');
-        
-        // コピーボタンを有効化
+
+        // 余分な改行を整形して表示
+        postText.value = post.replace(/\n{3,}/g, '\n\n').trim();
+
         document.querySelector('button[onclick="copyText()"]').style.display = 'block';
-        
+
       } catch (error) {
         console.error('エラーが発生しました:', error);
         postText.value = '';
         postText.placeholder = `エラー: ${error.message}`;
       } finally {
-        // ボタンを元に戻す
         generateBtn.disabled = false;
         generateBtn.textContent = '投稿文を生成';
         generateBtn.style.opacity = '1';
